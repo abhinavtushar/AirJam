@@ -2,32 +2,33 @@
 import subprocess
 import thread
 
-def _gen_string(notes, delay_period = 0.05, fade = [0, 4, 0.1]):
+def play_guitar(notes, delay, fade):
 	notes_array = notes.split(" ")
-	final = ""
+	final_string = ""
 	for i in notes_array:
-		final += "pl " + i + " "
-	if not delay_period == 0:
-		two_places = decimal.Decimal ('10') ** -2
-		j = 0
-		final += "delay "
-		while j < len(notes_array):			
-			final += str(decimal.Decimal(delay_period * j).quantize(two_places)) + " "
-			j += 1	
+		final_string += "pl " + i + " "
+	if delay != 0:
+		two_places = decimal.Decimal('10')**-2
+		i = 0
+		final_string += "delay "
+		while i < len(notes_array):
+			final_string += str(decimal.Decimal(delay * i).quantize(two_places)) + " "
+			i += 1
+	i = 0
+	if fade != [0, 0, 0]:
+		final_string += "remix - fade "
+		while i < len(fade):
+			final += str(fade[i]) + " "
+			i += 1
+		final_string += "norm -1"
+	subprocess.call("play -n synth " + final_string, shell = True)
 
-	j = 0
-	if not fade == [0, 0, 0]:
-		final += "remix - fade "
-		while j < len(fade):
-			final += str(fade[j]) + " "
-			j += 1
-		final += "norm -1"
-
-	return final
-
-def _play(notes, delay_period = 0.05, fade = [0, 4, 0.1]):
-	subprocess.call("play -n synth " + _gen_string(notes, delay_period, fade), shell = True)
+def play_drum(type):
+	# Plays the drum according to the type
 	return
 
-def play(notes, delay_period = 0.05, fade = [0, 4, 0.1]):
-	thread.start_new_thread(_play, (notes, delay_period, fade))
+def play(instrument, params):
+	if instrument == 'guitar':
+		thread.start_new_thread(play_guitar, (params[0], 0.05, [0, 4, 0.1]))
+	if instrument == 'drums':
+		thread.start_new_thread(play_drum, (params[0]))

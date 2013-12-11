@@ -4,7 +4,8 @@
 
 import cv2
 import numpy as np
-import play
+import playback
+import math
 
 neck_len=500
 neck_top=0
@@ -200,3 +201,21 @@ def getDistance(positions):
 		return 1
 	else:
 		return 0
+
+#-------------DRUM THINGS
+
+class drums:
+	def __init__(self, x, y, radius, type):
+		self.position = (x, y)
+		self.radius = radius
+		self.type = type
+		self.stick_here = False
+
+	def check(self, position):
+		distance = math.sqrt(((position[0]-self.x)**2)+((position[1]-self.y)**2))
+		if distance <= self.radius and self.stick_here == False:
+			self.stick_here = True
+			self.bang()
+
+	def bang:
+		playback.play('drums', self.type)
