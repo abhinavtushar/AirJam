@@ -5,7 +5,7 @@
 import lib
 import cv2
 import time
-import play
+import playback
 
 vc = cv2.VideoCapture(0)
 	
@@ -98,7 +98,7 @@ def start():
 				else:
 					song.append([prevStrum, 0.00])
 				prevTime = elapsed
-			play.play(lib.getPattern(mode,distance,'down'))
+			playback.play(lib.getPattern(mode,distance,'down'))
 			if gap == 0:
 				start = time.time()
 				prevStrum = lib.getPattern(mode,distance, 'down')
@@ -116,7 +116,7 @@ def start():
 					else:
 						song.append([prevStrum, 0.00])
 					prevTime = elapsed
-				play.play(lib.getPattern(mode,distance,'up'))
+				playback.play(lib.getPattern(mode,distance,'up'))
 				if gap == 0:
 					start = time.time()
 					prevStrum = lib.getPattern(mode,distance,'up')
@@ -125,8 +125,7 @@ def start():
 
 		ret, frame = vc.read()
 		key = cv2.waitKey(20)
-		if key == 27:	#Ends the session and save the song. Press ESCAPE key
-			play.save('muse', song, 0.05, [0, prevTime, 0.1])
+		if key == 27:	#Ends the session
 			break
 
 init()
