@@ -7,6 +7,14 @@ import numpy as np
 import playback
 import math
 
+#---------------CONSTANTS
+# HSV color ranges
+ranges = [[(160, 179),(106, 255),(0, 255)], # Red
+		[(60, 90),(81, 255),(0, 255)],	# Green
+		[(100, 119),(136, 255),(0, 255)]] # Blue
+
+#---------------GUITAR THINGS
+
 neck_len=500
 neck_top=0
 neck_bottom=500
@@ -31,10 +39,7 @@ notes_ar = [['A1','A#1','B1','C1','C#1','D1','D#1','E1','F1','F#1','G1','G#1'],
 		['A4','A#4','B4','C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4'],
 		['A5','A#5','B5','C5','C#5','D5','D#5','E5','F5','F#5','G5','G#5']]
 
-# HSV color ranges
-ranges = [[(160, 179),(106, 255),(0, 255)], # Red
-		[(60, 90),(81, 255),(0, 255)],	# Green
-		[(100, 119),(136, 255),(0, 255)]] # Blue
+
 
 #Clear noise when reading image contours
 
@@ -204,18 +209,30 @@ def getDistance(positions):
 
 #-------------DRUM THINGS
 
-class drums:
-	def __init__(self, x, y, radius, type):
+class drum:
+	def __init__(self, x, y, radius, typ):
 		self.position = (x, y)
 		self.radius = radius
-		self.type = type
+		self.type = typ
 		self.stick_here = False
+		self.play_flag = True
 
 	def check(self, position):
 		distance = math.sqrt(((position[0]-self.x)**2)+((position[1]-self.y)**2))
 		if distance <= self.radius and self.stick_here == False:
 			self.stick_here = True
-			self.bang()
 
 	def bang:
 		playback.play('drums', self.type)
+
+def create_drums(file, frame):
+	height = frame.shape[0]
+	width = frame.shape[1]
+	# instantiates drums according to config file and returns an array of drums
+	return drums_array
+
+#-------------BASIC CV ROUTINES
+
+def filter_position(img, color):
+	hsvframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+	return position

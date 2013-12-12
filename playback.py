@@ -24,7 +24,8 @@ def play_guitar(notes, delay, fade):
 	subprocess.call("play -n synth " + final_string, shell = True)
 
 def play_drum(type):
-	# Plays the drum according to the type
+	filename = type + ".wav"
+	# Plays the drum according to the type from the directory ./sounds/drums
 	return
 
 def play(instrument, params):
