@@ -2,7 +2,9 @@
 
 import math
 import playback
-import json
+import sys
+sys.path.append("../config/")
+import drums_config
 
 #----------------------------------------------------------
 
@@ -27,10 +29,16 @@ class drum:
 #----------------------------------------------------------
 
 def create_drums(frame):
-	# Instantiates drums according to config ../config/drums.json and returns an array of drums
+	# Instantiates drums according to ../config/drums_config and returns an array of drums
 	height = frame.shape[0]
 	width = frame.shape[1]
-	# Read Config
+	drums_array = []
+	for i in range(NUMBER_OF_DRUMS):
+		x = DRUM_SET[i]["cx"]*width
+		y = DRUM_SET[i]["cy"]*height
+		r = DRUM_SET[i]["r"]*width
+		typ = DRUM_SET[i]["type"]
+		drums_array.append(drum(x, y, r, typ))
 	return drums_array
 
 #----------------------------------------------------------

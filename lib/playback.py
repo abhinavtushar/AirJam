@@ -32,9 +32,7 @@ def play_guitar(notes, delay, fade):
 
 def play_drum(type):
 	# Plays the drum sounds using wavs saved in ../sounds/drums
-	
-	#filename = "../sounds/drums/"type + ".wav"
-
+	filename = "../sounds/drums/"type + ".wav"
 	f = wave.open(filename, 'rb')
 	sample_rate = f.get_frame_rate()
 	channels = f.getnchannels()
