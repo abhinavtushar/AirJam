@@ -55,7 +55,7 @@ def clearNoise(img):
 #Filter Out Each ColorBand covered Finger
 
 def filterFingers(img):
-		
+
 	height = img.shape[0]
 	width = img.shape[1]
 
@@ -233,6 +233,12 @@ def create_drums(file, frame):
 
 #-------------BASIC CV ROUTINES
 
-def filter_position(img, color):
+def filter_position(img):
 	hsvframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+	min = np.array([ranges[0][0][0], ranges[0][1][0], ranges[0][2][0]], np.uint8)
+	max = np.array([ranges[0][0][1], ranges[0][1][1], ranges[0][2][1]], np.uint8)
+	red = cv2.inRange(hsvframe, min, max)
+	red = clearNoise(red)
+	
+	position = getPositions([red])
 	return position

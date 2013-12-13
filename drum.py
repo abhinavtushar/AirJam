@@ -16,7 +16,7 @@ def draw(img, DRUMS_ARRAY):
 while ret:
 	# Filter red drumstick head and get position
 	position = lib.find_position(frame, "red")
-	
+
 	cv2.imshow('Preview', draw(frame))
 
 	for drum in DRUMS_ARRAY:
