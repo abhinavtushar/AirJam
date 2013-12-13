@@ -1,131 +1,104 @@
-#Called by the server to start a session
-#Defines the basic flow of execution of each session
-#inlcudes configuring the neck, playing and saving
+# The Air guitar
 
-import lib
+import lib.imgproc as imgproc
+import lib.guitarproc as guitarproc
 import cv2
 import time
-import playback
+
+#----------------------------------------------------------
 
 vc = cv2.VideoCapture(0)
-	
-def init():
-	#Initialize and configure
-	configure()
-	start()
 
-	cv2.destroyAllWindows()
+#Initialize and configure
+time.sleep(3)
 
+ret, frame = vc.read()
 
+if ret:
 
-def configure():
+	# Cropping the ROI
+	height = frame.shape[0]
+	width = frame.shape[1]
+	finger_frame = frame[0:(height/2), (width/2):(width-1)]
+	lower_frame = frame[(height/2):(height-1), 0:(width/2)]
 
-	time.sleep(3)
+	finger_images = []
+	for color in ["red", "green", "blue"]:
+		finger_images.append(imgproc.filter_color(finger_frame, color))
+	finger_positions = []
+	for finger_img in finger_images:
+		finger_positions.append(imgproc.get_position(finger_img))
 
-	ret, frame = vc.read()
-	
-	if ret:
-		hsvframe = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-		fingerImages = lib.filterFingers(hsvframe)
-		fingerPositions = lib.getPositions(fingerImages)
-		lowerPos = lib.getLowerBlob(hsvframe)
-		lib.initNeck(fingerPositions[0],lowerPos)
+	lower_position = imgproc.get_position(imgproc.filter_color(lower_frame, "red"))
+	guitarproc.init_neck(finger_positions[0],lower_position)
 
-	time.sleep(1)
+#----------------------------------------------------------
 
-#To get the strum direction and timing
-def start():
-	ret, frame = vc.read()
+ret, frame = vc.read()
 
-	# Timer for saving strum timings and saving music
-	start = time.time()
-	gap = 0
-	prevStrum = ""
-	song = []
-	prevTime = 0.00
-	elapsed = 0.00
+# Motion detection flags
+prev_position = 0
+direction = 0
+up = 0
+down = 0
+first_frame = 1
 
-	# Motion detection flags
-	prevPos = 0
-	direction = 0
-	up = 0
-	down = 0
-	firstframe = 1
+while ret:
 
-	while ret:
-		# Change color space for better detection
-		hsvframe = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-		fingerImages = lib.filterFingers(hsvframe)
-		cv2.imshow('red', fingerImages[0])	
-		cv2.imshow('green', fingerImages[1])
-		cv2.imshow('blue', fingerImages[2])
+	# Cropping the ROI
+	height = frame.shape[0]
+	width = frame.shape[1]
+	finger_frame = frame[0:(height/2), (width/2):(width-1)]
+	lower_frame = frame[(height/2):(height-1), 0:(width/2)]
 
-		fingerPositions = lib.getPositions(fingerImages)
+	finger_images = []
+	for color in ["red", "green", "blue"]:
+		finger_images.append(imgproc.filter_color(finger_frame, color))
 
-		# Detect the mode of playback
-		mode = lib.getMode(fingerPositions)
-		distance = lib.getDistance(fingerPositions)
+	finger_positions = []
+	for finger_img in finger_images:
+		finger_positions.append(imgproc.get_position(finger_img))
 
-		# Show the mode on screen
-		cv2.putText(frame, mode , (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 4, 255)
-		cv2.imshow('preview', frame)	
+	# Detect the mode of playback
+	mode = guitarproc.get_mode(finger_positions)
+	distance = guitarproc.get_distance(finger_positions)
+
+	# Show the mode on screen
+	cv2.putText(frame, mode , (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 4, 255)
+	cv2.imshow('Preview', frame)
 		
-		# Find the postion of lower strumming hand
-		lowerPos = lib.getLowerBlob(hsvframe)
+	# Find the postion of lower strumming hand
+	lower_position = imgproc.get_position(imgproc.filter_color(lower_frame, "red"))
 
-		# Motion detection for lower hand
-		if prevPos != 0:
-			disp = lowerPos[0][1] - prevPos
-			direction = direction + disp
-			if direction < -200:
-				up = 1
-				direction = 0
-			if direction > 200:
-				down = 1
-				direction = 0
-		if firstframe == 1:
-			firstframe = 0
-		prevPos = lowerPos[0][1]
-			
-		# Perform the playback and append the strum in song
-		if down == 1:
-			if gap == 1:
-				elapsed = time.time() - start
-				song.append([prevStrum, elapsed])
-				gap == 0
-				if prevTime != 0.00:
-					song.append([prevStrum, (elapsed-prevTime)])
-				else:
-					song.append([prevStrum, 0.00])
-				prevTime = elapsed
-			playback.play(lib.getPattern(mode,distance,'down'))
-			if gap == 0:
-				start = time.time()
-				prevStrum = lib.getPattern(mode,distance, 'down')
-				gap = 1
-			down = 0
+	# Motion detection for lower hand
+	if prev_position != 0:
+		disp = lower_position[0][1] - prev_position
+		direction = direction + disp
+		if direction < -200:
+			up = 1
+			direction = 0
+		if direction > 200:
+			down = 1
+			direction = 0
+	if first_frame == 1:
+		first_frame = 0
+	prev_position = lower_position[0][1]
+		
+	# Perform the playback
+	if down == 1:
+		guitarproc.strum(mode,distance,'down')
+		down = 0
 
-		else:
-			if up == 1:
-				if gap == 1:
-					elapsed = time.time() - start
-					song.append([prevStrum, elapsed])
-					gap == 0
-					if prevTime != 0.00:
-						song.append([prevStrum, (elapsed-prevTime)])
-					else:
-						song.append([prevStrum, 0.00])
-					prevTime = elapsed
-				playback.play(lib.getPattern(mode,distance,'up'))
-				if gap == 0:
-					start = time.time()
-					prevStrum = lib.getPattern(mode,distance,'up')
-					gap = 1
-				up = 0
+	else:
+		if up == 1:
+			guitarproc.strum(mode,distance,'up')
+			up = 0
 
-		ret, frame = vc.read()
-		key = cv2.waitKey(20)
-		if key == 27:	#Ends the session
-			break
+	ret, frame = vc.read()
+	key = cv2.waitKey(20)
+	if key == 27:
+		break
 
-init()
+cv2.destroyAllWindows()
+
+#----------------------------------------------------------
